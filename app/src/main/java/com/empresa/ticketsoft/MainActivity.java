@@ -8,20 +8,57 @@ import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.net.Uri;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String DOMINIO_PERMITIDO = "192.168.1.131:8000";
+    // private static final String DOMINIO_PERMITIDO = "192.168.1.131:8000";
 
     private static final long INACTIVITY_TIME = 30 * 1000;
     private Handler handler = new Handler();
     private Runnable dimScreenRunnable;
+    private WebView webView;
+    private static final String PREFS = "TicketSoftPrefs";
+    private static final String KEY_URL = "server_url";
+
+    private String getServerUrl() {
+        return getSharedPreferences(PREFS, MODE_PRIVATE)
+                .getString(KEY_URL, "http://192.168.1.131:8000/");
+    }
+
+    private void saveServerUrl(String url) {
+        getSharedPreferences(PREFS, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_URL, url)
+                .apply();
+    }
+
+    private class WebBridge {
+
+        @android.webkit.JavascriptInterface
+        public String getUrl() {
+            return getServerUrl();
+        }
+
+        @android.webkit.JavascriptInterface
+        public void saveUrl(String url) {
+            saveServerUrl(url);
+        }
+
+        @android.webkit.JavascriptInterface
+        public void reloadApp() {
+            runOnUiThread(() -> webView.loadUrl(getServerUrl()));
+        }
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         AppCompatDelegate.setDefaultNightMode(
                 AppCompatDelegate.MODE_NIGHT_YES
         );
@@ -32,10 +69,12 @@ public class MainActivity extends AppCompatActivity {
 
         activarPantallaCompleta();
 
-        WebView webView = new WebView(this);
+        webView = new WebView(this);
         setContentView(webView);
 
+
         WebSettings settings = webView.getSettings();
+
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(true);
@@ -46,8 +85,13 @@ public class MainActivity extends AppCompatActivity {
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 if (url == null) return true;
 
-                return !url.contains(DOMINIO_PERMITIDO);
+                Uri uri = Uri.parse(url);
+                Uri base = Uri.parse(getServerUrl());
+
+                // Permite mismo host
+                return !uri.getHost().equals(base.getHost());
             }
+
             @Override
             public void onReceivedError(
                     WebView view,
@@ -67,7 +111,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        webView.loadUrl("http://192.168.1.131:8000/");
+        webView.addJavascriptInterface(new WebBridge(), "Android");
+        webView.loadUrl(getServerUrl());
 
         // Runnable para bajar brillo Uuuuhh
         dimScreenRunnable = () -> setScreenBrightness(0.2f);
@@ -76,112 +121,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void mostrarErrorPerzonalizado(WebView webView){
-        String html =
-                "<html>"+
-            "<head>" +
-            "<meta name='viewport' content='width=device-width, initial-scale=1'>"+
-            "<style>"+
-                "body {"+
-                    "background: radial-gradient(circle at top, #3fa3ff, #0a7bfb, #2c5364);"+
-                    "font-family: 'Segoe UI', Arial, sans-serif;"+
-                    "display: flex;"+
-                    "justify-content: center;"+
-                    "align-items: center;"+
-                    "height: 100vh;"+
-                    "margin: 0; }"+
-
-                ".window {"+
-                    "width: 380px;"+
-                    "background: #f2f2f2;"+
-                    "border-radius: 8px;"+
-                    "box-shadow: 0 20px 50px rgba(0,0,0,0.6);"+
-                    "overflow: hidden;}"+
-
-                ".title-bar {"+
-                    "background: linear-gradient(to right, #0050ef, #0078d7);"+
-                    "color: white;"+
-                    "padding: 10px;"+
-                    "display: flex;"+
-                    "align-items: center;"+
-                    "justify-content: space-between;"+
-                    "font-weight: bold;}"+
-
-                ".title-bar span {"+
-                    "font-size: 14px;"+
-                "}"+
-
-                ".window-buttons {"+
-                    "display: flex;"+
-                    "gap: 6px;}"+
-
-                ".btn {"+
-                    "width: 14px;"+
-                    "height: 14px;"+
-                    "background: #cfcfcf;"+
-                    "border: 1px solid #888;}"+
-
-                ".content {"+
-                    "padding: 25px;"+
-                    "text-align: center;"+
-                    "color: #222;}"+
-
-                ".content img {"+
-                    "width: 160px;"+
-                    "margin-bottom: 15px;}"+
-
-                ".content h1 {"+
-                    "font-size: 18px;"+
-                    "margin-bottom: 10px;}"+
-
-                ".content p {"+
-                    "font-size: 14px;"+
-                    "color: #555;"+
-                "}"+
-
-                "button {"+
-                    "margin-top: 20px;"+
-                    "width: 100%;"+
-                    "padding: 12px;"+
-                    "font-size: 15px;"+
-                    "border: none;"+
-                    "border-radius: 6px;"+
-                    "background: #0078d7;"+
-                    "color: white;"+
-                    "cursor: pointer;}"+
-
-                "button:active {"+
-                    "background: #0050ef;"+
-                "}"+
-            "</style>"+
-        "</head>"+
-        "<body>"+
-
-            "<div class='window'>"+
-                "<div class='title-bar'>"+
-                    "<span>Error de conexión</span>"+
-                "</div>"+
-
-                "<div class='content'>"+
-                    "<img src='file:///android_res/drawable/logo_ticketsoft.webp'/>"+
-                    "<h1>No se puede acceder a TicketSoft</h1>"+
-                    "<p>"+
-                        "El sistema no logró comunicarse con el servidor.<br>"+
-                        "Verifique la conexión de red."+
-                    "</p>"+
-                    "<button onclick='location.reload()'>Reintentar</button>"+
-                "</div>"+
-            "</div>"+
-
-        "</body>"+
-        "</html>";
-
-        webView.loadDataWithBaseURL(
-                "file:///android_res/",
-                html,
-                "text/html",
-                "UTF-8",
-                null
-        );
+        webView.loadUrl("file:///android_asset/error.html");
     }
 
     @Override
