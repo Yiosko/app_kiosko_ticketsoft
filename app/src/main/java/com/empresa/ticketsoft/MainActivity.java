@@ -54,7 +54,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            activarPantallaCompleta();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +72,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        activarPantallaCompleta();
 
         webView = new WebView(this);
         setContentView(webView);
@@ -88,28 +92,32 @@ public class MainActivity extends AppCompatActivity {
                 Uri uri = Uri.parse(url);
                 Uri base = Uri.parse(getServerUrl());
 
-                // Permite mismo host
                 return !uri.getHost().equals(base.getHost());
             }
 
             @Override
             public void onReceivedError(
                     WebView view,
-                    int errorCode,
-                    String description,
-                    String failing
-            ){
-                mostrarErrorPerzonalizado(view);
+                    android.webkit.WebResourceRequest request,
+                    android.webkit.WebResourceError error
+            ) {
+                if (request.isForMainFrame()) {
+                    mostrarErrorPerzonalizado(view);
+                }
             }
 
+            @Override
             public void onReceivedHttpError(
                     WebView view,
                     android.webkit.WebResourceRequest request,
                     android.webkit.WebResourceResponse errorResponse
-            ){
-                mostrarErrorPerzonalizado(view);
+            ) {
+                if (request.isForMainFrame()) {
+                    mostrarErrorPerzonalizado(view);
+                }
             }
         });
+
 
         webView.addJavascriptInterface(new WebBridge(), "Android");
         webView.loadUrl(getServerUrl());
@@ -154,13 +162,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void activarPantallaCompleta() {
-        getWindow().getDecorView().setSystemUiVisibility(
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        );
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+
+            getWindow().setDecorFitsSystemWindows(false);
+
+            getWindow().getInsetsController().hide(
+                    android.view.WindowInsets.Type.statusBars()
+                            | android.view.WindowInsets.Type.navigationBars()
+            );
+
+            getWindow().getInsetsController().setSystemBarsBehavior(
+                    android.view.WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            );
+
+        } else {
+
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            );
+        }
     }
+
 }
