@@ -1,5 +1,6 @@
 package com.empresa.ticketsoft;
 
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
@@ -21,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable dimScreenRunnable;
     private WebView webView;
+    private NfcAdapter nfcAdapter;
+    private NfcTagBridge nfcTagBridge;
     private static final String PREFS = "TicketSoftPrefs";
     private static final String KEY_URL = "server_url";
 
@@ -122,6 +125,9 @@ public class MainActivity extends AppCompatActivity {
         webView.addJavascriptInterface(new WebBridge(), "Android");
         webView.loadUrl(getServerUrl());
 
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        nfcTagBridge = new NfcTagBridge(webView);
+
         // Runnable para bajar brillo Uuuuhh
         dimScreenRunnable = () -> setScreenBrightness(0.2f);
 
@@ -154,6 +160,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         activarPantallaCompleta();
+        if (nfcAdapter != null) {
+            nfcAdapter.enableReaderMode(
+                    this,
+                    nfcTagBridge::handleTagDiscovered,
+                    NfcAdapter.FLAG_READER_NFC_A
+                            | NfcAdapter.FLAG_READER_NFC_B
+                            | NfcAdapter.FLAG_READER_NFC_F
+                            | NfcAdapter.FLAG_READER_NFC_V
+                            | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+                    null
+            );
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (nfcAdapter != null) {
+            nfcAdapter.disableReaderMode(this);
+        }
     }
 
     @Override
