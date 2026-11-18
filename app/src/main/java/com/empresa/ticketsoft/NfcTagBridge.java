@@ -21,7 +21,21 @@ public class NfcTagBridge {
     }
 
     public void handleTagDiscovered(Tag tag) {
-        String uid = "NFC" + bytesToHex(tag.getId());
+        byte[] id = tag.getId();
+        // Solo UID de 4 bytes (MIFARE Classic, confirmado con hardware real)
+        // o 7 bytes (NTAG) — el endpoint que resuelve esto en el servidor
+        // solo acepta esos dos largos. NFC-F/NFC-V dan 8 bytes, un UID
+        // triple-size de NFC-A da 10, y algunos lectores devuelven un
+        // arreglo vacío: cualquiera de esos se guardaría en Serial 1/2 al
+        // crear un vehículo pero nunca podría resolverse al vender. Mejor
+        // descartarlo acá, con log, que dejarlo pasar como un tag "válido"
+        // que jamás funciona.
+        if (id == null || (id.length != 4 && id.length != 7)) {
+            Log.w("NfcTagBridge", "tag descartado, largo de UID no soportado: "
+                + (id == null ? "null" : id.length + " bytes"));
+            return;
+        }
+        String uid = "NFC" + bytesToHex(id);
         long ahora = System.currentTimeMillis();
         if (uid.equals(ultimoUid) && (ahora - ultimaLecturaMs) < DEDUPE_WINDOW_MS) {
             return;

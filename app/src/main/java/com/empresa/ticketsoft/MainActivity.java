@@ -55,6 +55,17 @@ public class MainActivity extends AppCompatActivity {
         public void reloadApp() {
             runOnUiThread(() -> webView.loadUrl(getServerUrl()));
         }
+
+        // El equipo puede no tener hardware NFC, o tenerlo apagado en
+        // Ajustes — el kiosko ni siquiera asume que todos los equipos en
+        // campo lo tienen (ver el `required="false"` del manifest). El JS
+        // usa esto para decidir si ofrece la pestaña "Tarjeta NFC" al
+        // crear un vehículo, en vez de mostrar un aviso que nunca se
+        // puede cumplir.
+        @android.webkit.JavascriptInterface
+        public boolean nfcDisponible() {
+            return nfcAdapter != null && nfcAdapter.isEnabled();
+        }
     }
 
     @Override
