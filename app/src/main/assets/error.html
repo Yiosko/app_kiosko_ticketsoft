@@ -25,7 +25,7 @@
             --gray-10:#f4f4f4;
         }
         body{
-            background:radial-gradient(circle at top,#3fa3ff,#0a7bfb,#2c5364);
+            background:#000000;
             font-family:'IBM Plex Sans','Segoe UI',Helvetica,Arial,sans-serif;
             display:flex;
             justify-content:center;
@@ -39,6 +39,10 @@
             border-radius:0;
             box-shadow:0 20px 50px rgba(0,0,0,.6);
             padding:32px;
+        }
+        .logo{
+            display:block;
+            margin:0 auto;
         }
         h3{
             margin:24px 0 8px;
@@ -122,7 +126,7 @@
 <div class="window">
 
     <div id="error">
-        <img src="file:///android_res/drawable/logo_ticketsoft.webp" width="160"><br>
+        <img class="logo" src="file:///android_res/drawable/logo_ticketsoft.webp" width="160">
         <h3>Sin conexión al servidor</h3>
         <p>No se pudo establecer comunicación con TicketSoft.</p>
         <div class="buttons">
