@@ -21,20 +21,21 @@
             border-radius:8px;
             box-shadow:0 20px 50px rgba(0,0,0,.6);
             overflow:hidden;
-        }
-        .title{
-            background:linear-gradient(to right,#0050ef,#0078d7);
-            color:#fff;
-            padding:10px;
-            font-weight:bold;
-        }
-        .content{
             padding:25px;
-            text-align:center;
+        }
+        h3{
+            margin:15px 0 8px;
+        }
+        p{
+            margin:0 0 15px;
+            color:#333;
+        }
+        .buttons{
+            display:flex;
+            gap:10px;
         }
         button{
-            margin-top:10px;
-            width:100%;
+            flex:1;
             padding:12px;
             font-size:15px;
             border:none;
@@ -42,11 +43,23 @@
             background:#0078d7;
             color:#fff;
         }
+        button.secundario{
+            background:#6c757d;
+        }
         input{
             width:100%;
-            padding:10px;
+            box-sizing:border-box;
+            padding:8px 0;
             font-size:14px;
-            margin-top:10px;
+            border:none;
+            border-bottom:1px solid #999;
+            background:transparent;
+            margin-bottom:15px;
+        }
+        hr{
+            border:none;
+            border-top:1px solid #ccc;
+            margin:10px 0 15px;
         }
         .hidden{display:none}
     </style>
@@ -55,36 +68,32 @@
 <body>
 
 <div class="window">
-    <div class="title">Connection error</div>
 
-    <div id="error" class="content">
+    <div id="error">
         <img src="file:///android_res/drawable/logo_ticketsoft.webp" width="160"><br>
-        <h3>No se puede acceder a TicketSoft</h3>
-        <p>El sistema no logró comunicarse con el servidor.</p>
-        <button onclick="location.reload()">Reintentar</button>
-        <button onclick="showPrefs()">Preferencias</button>
+        <h3>Sin conexión al servidor</h3>
+        <p>No se pudo establecer comunicación con TicketSoft.</p>
+        <div class="buttons">
+            <button onclick="location.reload()">Reintentar</button>
+            <button class="secundario" onclick="showPrefs()">Preferencias</button>
+        </div>
     </div>
 
-    <div id="prefs" class="content hidden">
-        <h3>Preferencias</h3>
+    <div id="prefs" class="hidden">
+        <h3>Configuración</h3>
 
-        <p><b>IP / URL actual:</b></p>
-        <div id="actual" style="
-        background:#e9e9e9;
-        padding:8px;
-        border-radius:6px;
-        font-size:13px;
-        word-break:break-all;
-    "></div>
+        <p>URL actual:</p>
+        <p id="actual" style="margin-top:-10px;"></p>
 
-        <p style="margin-top:10px;">Cambiar IP / URL:</p>
+        <p>Nueva URL</p>
         <input id="url" placeholder="http://192.168.1.100:8000">
+        <hr>
 
-        <button onclick="guardar()">Guardar</button>
-        <button onclick="volver()">Volver</button>
+        <div class="buttons">
+            <button onclick="guardar()">Guardar</button>
+            <button class="secundario" onclick="volver()">Volver</button>
+        </div>
     </div>
-
-
 
 </div>
 
@@ -110,10 +119,7 @@
         volver();
         Android.reloadApp();
     }
-
-
 </script>
-
 
 </body>
 </html>
