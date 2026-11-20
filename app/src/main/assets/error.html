@@ -37,6 +37,7 @@
             width:400px;
             background:#ffffff;
             border-radius:0;
+            border:1px solid var(--gray-20);
             box-shadow:0 20px 50px rgba(0,0,0,.6);
             padding:32px;
         }
@@ -56,6 +57,15 @@
             font-size:14px;
             line-height:1.4;
             color:var(--gray-70);
+        }
+        #error h3, #error p{
+            text-align:center;
+        }
+        .version{
+            margin:20px 0 0;
+            font-size:12px;
+            color:var(--gray-60);
+            text-align:center;
         }
         label{
             display:block;
@@ -126,13 +136,14 @@
 <div class="window">
 
     <div id="error">
-        <img class="logo" src="file:///android_res/drawable/logo_ticketsoft.webp" width="160">
+        <img class="logo" src="file:///android_res/drawable/logo_ticketsoft.webp" width="220">
         <h3>Sin conexión al servidor</h3>
         <p>No se pudo establecer comunicación con TicketSoft.</p>
         <div class="buttons">
             <button onclick="location.reload()">Reintentar</button>
             <button class="secundario" onclick="showPrefs()">Preferencias</button>
         </div>
+        <p class="version" id="version"></p>
     </div>
 
     <div id="prefs" class="hidden">
@@ -157,6 +168,10 @@
 </div>
 
 <script>
+    try {
+        document.getElementById('version').innerText = 'v' + Android.getVersionName();
+    } catch (e) {}
+
     function showPrefs(){
         const actual = Android.getUrl();
 

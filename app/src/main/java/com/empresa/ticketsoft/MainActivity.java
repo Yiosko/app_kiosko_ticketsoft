@@ -66,6 +66,17 @@ public class MainActivity extends AppCompatActivity {
         public boolean nfcDisponible() {
             return nfcAdapter != null && nfcAdapter.isEnabled();
         }
+
+        @android.webkit.JavascriptInterface
+        public String getVersionName() {
+            try {
+                return getPackageManager()
+                        .getPackageInfo(getPackageName(), 0)
+                        .versionName;
+            } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+                return "";
+            }
+        }
     }
 
     @Override
